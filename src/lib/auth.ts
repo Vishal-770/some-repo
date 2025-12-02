@@ -2,6 +2,7 @@ import { betterAuth } from "better-auth";
 import { MongoClient } from "mongodb";
 import { mongodbAdapter } from "better-auth/adapters/mongodb";
 import { sendEmailVerification } from "../services/SendEmail";
+import { sendPasswordResetEmail } from "../services/SendPasswordResetEmail";
 
 const client = new MongoClient(process.env.MONGODB_URI!, {
   tls: true,
@@ -23,11 +24,18 @@ export const auth = betterAuth({
       clientId: process.env.GITHUB_CLIENT_ID as string,
       clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
     },
+    google: {
+      clientId: process.env.GOOGLE_CLIENT_ID as string,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+    },
   },
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: true,
     autoSignIn: false,
+    sendResetPassword: async ({ user, url }) => {
+      void sendPasswordResetEmail(user.email, user.name, url);
+    },
   },
 
   database: mongodbAdapter(db),
