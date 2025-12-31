@@ -189,7 +189,8 @@ const UsersPage = () => {
     try {
       await authClient.signOut();
       toast.success("Signed out successfully");
-      // Redirect will be handled by the auth system
+      // Refresh the page after sign out
+      window.location.reload();
     } catch (error) {
       console.error("Sign out error:", error);
       toast.error("Failed to sign out");
