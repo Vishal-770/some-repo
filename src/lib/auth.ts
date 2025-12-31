@@ -3,7 +3,7 @@ import { MongoClient } from "mongodb";
 import { mongodbAdapter } from "better-auth/adapters/mongodb";
 import { sendEmailVerification } from "../services/SendEmail";
 import { sendPasswordResetEmail } from "../services/SendPasswordResetEmail";
-import { username } from "better-auth/plugins";
+import { admin, username } from "better-auth/plugins";
 
 const client = new MongoClient(process.env.MONGODB_URI!, {
   tls: true,
@@ -38,7 +38,12 @@ export const auth = betterAuth({
     },
   },
 
-  plugins: [username()],
+  plugins: [
+    username(),
+    admin({
+      adminUserIds: ["6954dcce5b99be59bf7a4811"],
+    }),
+  ],
 
   // Use databaseHooks to handle unverified email takeover
   databaseHooks: {
