@@ -153,8 +153,8 @@ export function LoginForm({
               {...register("password", {
                 required: "Required",
                 minLength: {
-                  value: 8,
-                  message: "Min 8 characters",
+                  value: 6,
+                  message: "Min 6 characters",
                 },
               })}
             />

@@ -2,25 +2,6 @@
 
 import React, { useState, useEffect } from "react";
 import { authClient } from "@/src/lib/auth-client";
-import { Button } from "@/src/components/ui/button";
-import { Input } from "@/src/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/src/components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/src/components/ui/table";
-import { Alert, AlertDescription } from "@/src/components/ui/alert";
-import { Badge } from "@/src/components/ui/badge";
 import {
   Card,
   CardContent,
@@ -28,33 +9,19 @@ import {
   CardHeader,
   CardTitle,
 } from "@/src/components/ui/card";
-import { Skeleton } from "@/src/components/ui/skeleton";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/src/components/ui/dialog";
-import { Label } from "@/src/components/ui/label";
+import { Alert, AlertDescription } from "@/src/components/ui/alert";
 import { toast } from "sonner";
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  createdAt: string;
-  role?: string;
-}
-
-interface CreateUserForm {
-  email: string;
-  password: string;
-  name: string;
-  role: string;
-}
+import {
+  SearchAndFilter,
+  UserTable,
+  Pagination,
+  CreateUserDialog,
+  UpdateUserDialog,
+  DeleteUserDialog,
+  User,
+  CreateUserForm,
+  UpdateUserForm,
+} from "@/src/components/admin";
 
 const UsersPage = () => {
   const [users, setUsers] = useState<User[]>([]);
@@ -65,13 +32,10 @@ const UsersPage = () => {
   const [searchValue, setSearchValue] = useState<string>("");
   const [searchField, setSearchField] = useState<"email" | "name">("email");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [createForm, setCreateForm] = useState<CreateUserForm>({
-    email: "",
-    password: "",
-    name: "",
-    role: "user",
-  });
-  const [isCreating, setIsCreating] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<User | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+  const [userToUpdate, setUserToUpdate] = useState<User | null>(null);
 
   const pageSize = 10;
 
@@ -126,19 +90,13 @@ const UsersPage = () => {
     setCurrentPage(page);
   };
 
-  const handleCreateUser = async () => {
-    if (!createForm.email || !createForm.password || !createForm.name) {
-      toast.error("Please fill in all required fields");
-      return;
-    }
-
-    setIsCreating(true);
+  const handleCreateUser = async (data: CreateUserForm) => {
     try {
       const { data: newUser, error } = await authClient.admin.createUser({
-        email: createForm.email,
-        password: createForm.password,
-        name: createForm.name,
-        role: createForm.role,
+        email: data.email,
+        password: data.password,
+        name: data.name,
+        role: data.role,
       });
 
       if (error) {
@@ -149,20 +107,80 @@ const UsersPage = () => {
       if (newUser) {
         toast.success("User created successfully!");
         setIsCreateModalOpen(false);
-        setCreateForm({
-          email: "",
-          password: "",
-          name: "",
-          role: "user",
-        });
         // Refresh the users list
         fetchUsers(currentPage, searchValue, searchField);
       }
     } catch (err) {
       console.error(err);
       toast.error("An error occurred while creating the user");
+    }
+  };
+
+  const handleDeleteUser = async (userId: string) => {
+    setIsDeleting(true);
+    try {
+      const { data: deletedUser, error } = await authClient.admin.removeUser({
+        userId: userId,
+      });
+
+      if (error) {
+        toast.error(error.message || "Failed to delete user");
+        return;
+      }
+
+      if (deletedUser) {
+        toast.success("User deleted successfully!");
+        setUserToDelete(null);
+        // Refresh the users list
+        fetchUsers(currentPage, searchValue, searchField);
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("An error occurred while deleting the user");
     } finally {
-      setIsCreating(false);
+      setIsDeleting(false);
+    }
+  };
+
+  const handleUpdateUser = async (data: UpdateUserForm) => {
+    if (!userToUpdate) return;
+
+    try {
+      const { data: updatedUser, error } = await authClient.admin.updateUser({
+        userId: userToUpdate.id,
+        data: {
+          name: data.name,
+          email: data.email,
+        },
+      });
+
+      if (error) {
+        toast.error(error.message || "Failed to update user");
+        return;
+      }
+
+      if (updatedUser) {
+        toast.success("User updated successfully!");
+        setIsUpdateModalOpen(false);
+        setUserToUpdate(null);
+        // Refresh the users list
+        fetchUsers(currentPage, searchValue, searchField);
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("An error occurred while updating the user");
+    }
+  };
+
+  const handleEditUser = (user: User) => {
+    setUserToUpdate(user);
+    setIsUpdateModalOpen(true);
+  };
+
+  const handleDeleteUserClick = (userId: string) => {
+    const user = users.find((u) => u.id === userId);
+    if (user) {
+      setUserToDelete(user);
     }
   };
 
@@ -179,130 +197,22 @@ const UsersPage = () => {
                 Manage and view all registered users in the system.
               </CardDescription>
             </div>
-            <Dialog
-              open={isCreateModalOpen}
+            <CreateUserDialog
+              isOpen={isCreateModalOpen}
               onOpenChange={setIsCreateModalOpen}
-            >
-              <DialogTrigger asChild>
-                <Button>Create User</Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader>
-                  <DialogTitle>Create New User</DialogTitle>
-                  <DialogDescription>
-                    Add a new user to the system. Fill in the required
-                    information below.
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="grid gap-4 py-4">
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="email" className="text-right">
-                      Email *
-                    </Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={createForm.email}
-                      onChange={(e) =>
-                        setCreateForm({ ...createForm, email: e.target.value })
-                      }
-                      className="col-span-3"
-                      placeholder="user@example.com"
-                    />
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="password" className="text-right">
-                      Password *
-                    </Label>
-                    <Input
-                      id="password"
-                      type="password"
-                      value={createForm.password}
-                      onChange={(e) =>
-                        setCreateForm({
-                          ...createForm,
-                          password: e.target.value,
-                        })
-                      }
-                      className="col-span-3"
-                      placeholder="Enter secure password"
-                    />
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="name" className="text-right">
-                      Name *
-                    </Label>
-                    <Input
-                      id="name"
-                      value={createForm.name}
-                      onChange={(e) =>
-                        setCreateForm({ ...createForm, name: e.target.value })
-                      }
-                      className="col-span-3"
-                      placeholder="Full name"
-                    />
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="role" className="text-right">
-                      Role
-                    </Label>
-                    <Select
-                      value={createForm.role}
-                      onValueChange={(value) =>
-                        setCreateForm({ ...createForm, role: value })
-                      }
-                    >
-                      <SelectTrigger className="col-span-3">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="user">User</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button
-                    variant="outline"
-                    onClick={() => setIsCreateModalOpen(false)}
-                  >
-                    Cancel
-                  </Button>
-                  <Button onClick={handleCreateUser} disabled={isCreating}>
-                    {isCreating ? "Creating..." : "Create User"}
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+              onCreateUser={handleCreateUser}
+            />
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Search */}
-          <div className="flex gap-4">
-            <Select
-              value={searchField}
-              onValueChange={(value: "email" | "name") => setSearchField(value)}
-            >
-              <SelectTrigger className="w-40">
-                <SelectValue placeholder="Search by" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="email">Email</SelectItem>
-                <SelectItem value="name">Name</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Input
-              type="text"
-              placeholder={`Search by ${searchField}...`}
-              value={searchValue}
-              onChange={(e) => setSearchValue(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-              className="flex-1"
-            />
-
-            <Button onClick={handleSearch}>Search</Button>
-          </div>
+          <SearchAndFilter
+            searchValue={searchValue}
+            searchField={searchField}
+            onSearchValueChange={setSearchValue}
+            onSearchFieldChange={setSearchField}
+            onSearch={handleSearch}
+          />
 
           {/* Error */}
           {error && (
@@ -311,83 +221,40 @@ const UsersPage = () => {
             </Alert>
           )}
 
-          {/* Loading */}
-          {loading && (
-            <div className="space-y-4">
-              <Skeleton className="h-8 w-full" />
-              <Skeleton className="h-8 w-full" />
-              <Skeleton className="h-8 w-full" />
-              <Skeleton className="h-8 w-full" />
-            </div>
-          )}
-
           {/* Table */}
-          {!loading && (
-            <>
-              <div className="border rounded-lg">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Role</TableHead>
-                      <TableHead>Created At</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {users.map((user) => (
-                      <TableRow key={user.id}>
-                        <TableCell className="font-medium">
-                          {user.name}
-                        </TableCell>
-                        <TableCell>{user.email}</TableCell>
-                        <TableCell>
-                          <Badge
-                            variant={
-                              user.role === "admin" ? "default" : "secondary"
-                            }
-                          >
-                            {user.role ?? "user"}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          {new Date(user.createdAt).toLocaleDateString()}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
+          <UserTable
+            users={users}
+            loading={loading}
+            onEditUser={handleEditUser}
+            onDeleteUser={handleDeleteUserClick}
+          />
 
-              {/* Pagination */}
-              <div className="flex justify-between items-center">
-                <p className="text-sm text-muted-foreground">
-                  Showing {(currentPage - 1) * pageSize + 1} to{" "}
-                  {Math.min(currentPage * pageSize, total)} of {total} users
-                </p>
-
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    disabled={currentPage === 1}
-                    onClick={() => handlePageChange(currentPage - 1)}
-                  >
-                    Previous
-                  </Button>
-
-                  <Button
-                    variant="outline"
-                    disabled={currentPage === totalPages}
-                    onClick={() => handlePageChange(currentPage + 1)}
-                  >
-                    Next
-                  </Button>
-                </div>
-              </div>
-            </>
-          )}
+          {/* Pagination */}
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            total={total}
+            pageSize={pageSize}
+            onPageChange={handlePageChange}
+          />
         </CardContent>
       </Card>
+
+      {/* Update User Dialog */}
+      <UpdateUserDialog
+        isOpen={isUpdateModalOpen}
+        onOpenChange={setIsUpdateModalOpen}
+        user={userToUpdate}
+        onUpdateUser={handleUpdateUser}
+      />
+
+      {/* Delete User Dialog */}
+      <DeleteUserDialog
+        user={userToDelete}
+        isDeleting={isDeleting}
+        onConfirmDelete={handleDeleteUser}
+        onCancel={() => setUserToDelete(null)}
+      />
     </div>
   );
 };
