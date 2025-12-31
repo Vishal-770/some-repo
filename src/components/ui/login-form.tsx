@@ -10,7 +10,6 @@ import {
   FieldDescription,
   FieldGroup,
   FieldLabel,
-  FieldSeparator,
 } from "@/src/components/ui/field";
 import { Input } from "@/src/components/ui/input";
 import Link from "next/link";
@@ -27,25 +26,8 @@ export function LoginForm({
   ...props
 }: React.ComponentProps<"div">) {
   const [loading, setLoading] = useState(false);
-  const [githubLoading, setGithubLoading] = useState(false);
-  const [googleLoading, setGoogleLoading] = useState(false);
+
   const [serverError, setServerError] = useState<string | null>(null);
-
-  const handleGithubSignIn = async () => {
-    setGithubLoading(true);
-    await authClient.signIn.social({
-      provider: "github",
-      callbackURL: "/dashboard",
-    });
-  };
-
-  const handleGoogleSignIn = async () => {
-    setGoogleLoading(true);
-    await authClient.signIn.social({
-      provider: "google",
-      callbackURL: "/dashboard",
-    });
-  };
 
   const {
     register,
@@ -216,8 +198,6 @@ export function LoginForm({
               )}
             </Button>
           </Field>
-          
-          
         </FieldGroup>
       </form>
       <FieldDescription className="px-6 text-center">
