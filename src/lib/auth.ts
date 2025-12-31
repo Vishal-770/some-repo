@@ -3,6 +3,7 @@ import { MongoClient } from "mongodb";
 import { mongodbAdapter } from "better-auth/adapters/mongodb";
 import { sendEmailVerification } from "../services/SendEmail";
 import { sendPasswordResetEmail } from "../services/SendPasswordResetEmail";
+import { username } from "better-auth/plugins";
 
 const client = new MongoClient(process.env.MONGODB_URI!, {
   tls: true,
@@ -18,16 +19,6 @@ export const auth = betterAuth({
     },
     sendOnSignIn: true,
     autoSignInAfterVerification: true,
-  },
-  socialProviders: {
-    github: {
-      clientId: process.env.GITHUB_CLIENT_ID as string,
-      clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
-    },
-    google: {
-      clientId: process.env.GOOGLE_CLIENT_ID as string,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
-    },
   },
   emailAndPassword: {
     enabled: true,
@@ -46,6 +37,8 @@ export const auth = betterAuth({
       trustedProviders: ["email"],
     },
   },
+
+  plugins: [username()],
 
   // Use databaseHooks to handle unverified email takeover
   databaseHooks: {
