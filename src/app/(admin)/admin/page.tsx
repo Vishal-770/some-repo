@@ -178,6 +178,10 @@ const UsersPage = () => {
     setIsUpdateModalOpen(true);
   };
 
+  const handleViewSessions = (userId: string) => {
+    window.location.href = `/admin/${userId}`;
+  };
+
   const handleDeleteUserClick = (userId: string) => {
     const user = users.find((u) => u.id === userId);
     if (user) {
@@ -244,6 +248,7 @@ const UsersPage = () => {
             users={users}
             loading={loading}
             onEditUser={handleEditUser}
+            onViewSessions={handleViewSessions}
             onDeleteUser={handleDeleteUserClick}
           />
 
