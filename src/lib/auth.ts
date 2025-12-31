@@ -33,7 +33,7 @@ export const auth = betterAuth({
   plugins: [
     username(),
     admin({
-      adminUserIds: ["6954f2f145f3640d14e21623"],
+      adminUserIds: ["6954f2f145f3640d14e21623", "695505fa2e31a93d2c16f33c"],
     }),
   ],
 

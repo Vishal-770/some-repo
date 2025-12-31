@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { authClient } from "@/src/lib/auth-client";
+import { Button } from "@/src/components/ui/button";
 import {
   Card,
   CardContent,
@@ -184,6 +185,17 @@ const UsersPage = () => {
     }
   };
 
+  const handleSignOut = async () => {
+    try {
+      await authClient.signOut();
+      toast.success("Signed out successfully");
+      // Redirect will be handled by the auth system
+    } catch (error) {
+      console.error("Sign out error:", error);
+      toast.error("Failed to sign out");
+    }
+  };
+
   const totalPages = Math.ceil(total / pageSize);
 
   return (
@@ -197,11 +209,16 @@ const UsersPage = () => {
                 Manage and view all registered users in the system.
               </CardDescription>
             </div>
-            <CreateUserDialog
-              isOpen={isCreateModalOpen}
-              onOpenChange={setIsCreateModalOpen}
-              onCreateUser={handleCreateUser}
-            />
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={handleSignOut}>
+                Sign Out
+              </Button>
+              <CreateUserDialog
+                isOpen={isCreateModalOpen}
+                onOpenChange={setIsCreateModalOpen}
+                onCreateUser={handleCreateUser}
+              />
+            </div>
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
