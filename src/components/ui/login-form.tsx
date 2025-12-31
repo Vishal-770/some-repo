@@ -90,15 +90,6 @@ export function LoginForm({
               <span className="sr-only">Acme Inc.</span>
             </a>
             <h1 className="text-xl font-bold">Welcome to Acme Inc.</h1>
-            <FieldDescription>
-              Don&apos;t have an account?{" "}
-              <Link
-                href="/signup"
-                className="underline underline-offset-2 hover:text-primary"
-              >
-                Sign up
-              </Link>
-            </FieldDescription>
           </div>
 
           {serverError && (

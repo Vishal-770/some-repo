@@ -63,7 +63,7 @@ export function UpdateUserDialog({
         <DialogHeader>
           <DialogTitle>Update User</DialogTitle>
           <DialogDescription>
-            Update the user's information below.
+            Update the user&apos;s information below.
           </DialogDescription>
         </DialogHeader>
         <form

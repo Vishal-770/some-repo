@@ -19,17 +19,11 @@ const HomePage = () => {
           </h1>
           <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
             A secure and modern authentication system built with Next.js and
-            Better Auth. Sign up, verify your email, and access your
-            personalized dashboard.
+            Better Auth. Sign in and access your personalized dashboard.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/signup">
-              <Button size="lg" className="w-full sm:w-auto">
-                Get Started
-              </Button>
-            </Link>
             <Link href="/signin">
-              <Button variant="outline" size="lg" className="w-full sm:w-auto">
+              <Button size="lg" className="w-full sm:w-auto">
                 Sign In
               </Button>
             </Link>
