@@ -18,15 +18,9 @@ import {
 import { Skeleton } from "@/src/components/ui/skeleton";
 import { Badge } from "@/src/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
-interface LeaderboardUser {
-  rank: number;
-  id: string;
-  name: string;
-  points: number;
-}
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { fetchLeaderBoard } from "@/src/services/FetchLeaderBoard";
 
 const LeaderboardPage = () => {
   const {
@@ -35,10 +29,7 @@ const LeaderboardPage = () => {
     error,
   } = useQuery({
     queryKey: ["leaderboard"],
-    queryFn: async () => {
-      const response = await axios.get<LeaderboardUser[]>("/leaderboard_api");
-      return response.data;
-    },
+    queryFn: fetchLeaderBoard,
   });
 
   if (loading) {
