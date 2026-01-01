@@ -17,7 +17,15 @@ export const auth = betterAuth({
       void sendPasswordResetEmail(user.email, user.name, url);
     },
   },
-
+  user: {
+    additionalFields: {
+      points: {
+        type: "number",
+        required: false,
+        defaultValue: 0,
+      },
+    },
+  },
   database: mongodbAdapter(db),
 
   account: {

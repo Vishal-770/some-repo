@@ -5,6 +5,7 @@ export interface User {
   createdAt: Date | string;
   role?: string;
   username?: string;
+  points?: number;
 }
 
 export interface CreateUserForm {

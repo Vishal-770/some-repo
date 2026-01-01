@@ -48,6 +48,7 @@ export function UserTable({
             <TableHead>Email</TableHead>
             <TableHead>Role</TableHead>
             <TableHead>Created At</TableHead>
+            <TableHead>Points</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -66,6 +67,7 @@ export function UserTable({
               <TableCell>
                 {new Date(user.createdAt).toLocaleDateString()}
               </TableCell>
+              <TableCell>{user.points}</TableCell>
               <TableCell>
                 <div className="flex gap-2">
                   <Button
