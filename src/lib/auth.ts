@@ -1,14 +1,11 @@
 import { betterAuth } from "better-auth";
-import { MongoClient } from "mongodb";
+
 import { mongodbAdapter } from "better-auth/adapters/mongodb";
 import { sendPasswordResetEmail } from "../services/SendPasswordResetEmail";
 import { admin, username } from "better-auth/plugins";
+import clientPromise from "./mongo";
 
-const client = new MongoClient(process.env.MONGODB_URI!, {
-  tls: true,
-  tlsAllowInvalidCertificates: false,
-});
-await client.connect();
+const client = await clientPromise;
 const db = client.db();
 
 export const auth = betterAuth({
