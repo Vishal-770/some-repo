@@ -20,6 +20,7 @@ import { UpdateUserForm, User } from "./types";
 const updateUserSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
   name: z.string().min(1, "Name is required"),
+  points: z.number().min(0, "Points must be non-negative"),
 });
 
 interface UpdateUserDialogProps {
@@ -40,6 +41,7 @@ export function UpdateUserDialog({
     defaultValues: {
       email: "",
       name: "",
+      points: 0,
     },
   });
 
@@ -49,6 +51,7 @@ export function UpdateUserDialog({
       form.reset({
         email: user.email,
         name: user.name,
+        points: user.points || 0,
       });
     }
   }, [user, form]);
@@ -102,6 +105,24 @@ export function UpdateUserDialog({
               {form.formState.errors.name && (
                 <p className="text-sm text-destructive mt-1">
                   {form.formState.errors.name.message}
+                </p>
+              )}
+            </div>
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="update-points" className="text-right">
+              Points *
+            </Label>
+            <div className="col-span-3">
+              <Input
+                id="update-points"
+                type="number"
+                {...form.register("points", { valueAsNumber: true })}
+                placeholder="0"
+              />
+              {form.formState.errors.points && (
+                <p className="text-sm text-destructive mt-1">
+                  {form.formState.errors.points.message}
                 </p>
               )}
             </div>

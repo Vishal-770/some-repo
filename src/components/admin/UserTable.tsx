@@ -18,6 +18,7 @@ interface UserTableProps {
   loading: boolean;
   onEditUser: (user: User) => void;
   onViewSessions: (userId: string) => void;
+  onAdjustPoints: (user: User) => void;
   onDeleteUser: (userId: string) => void;
 }
 
@@ -26,6 +27,7 @@ export function UserTable({
   loading,
   onEditUser,
   onViewSessions,
+  onAdjustPoints,
   onDeleteUser,
 }: UserTableProps) {
   if (loading) {
@@ -83,6 +85,13 @@ export function UserTable({
                     onClick={() => onViewSessions(user.id)}
                   >
                     View Sessions
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onAdjustPoints(user)}
+                  >
+                    Adjust Points
                   </Button>
                   <Button
                     variant="destructive"

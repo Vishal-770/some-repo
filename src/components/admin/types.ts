@@ -18,6 +18,7 @@ export interface CreateUserForm {
 export interface UpdateUserForm {
   email: string;
   name: string;
+  points: number;
 }
 
 export interface SearchFilters {

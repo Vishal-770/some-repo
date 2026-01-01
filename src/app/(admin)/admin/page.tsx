@@ -18,6 +18,7 @@ import {
   Pagination,
   CreateUserDialog,
   UpdateUserDialog,
+  AdjustPointsDialog,
   DeleteUserDialog,
   User,
   CreateUserForm,
@@ -37,6 +38,10 @@ const UsersPage = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [userToUpdate, setUserToUpdate] = useState<User | null>(null);
+  const [isAdjustPointsModalOpen, setIsAdjustPointsModalOpen] = useState(false);
+  const [userToAdjustPoints, setUserToAdjustPoints] = useState<User | null>(
+    null
+  );
 
   const pageSize = 10;
 
@@ -152,6 +157,7 @@ const UsersPage = () => {
         data: {
           name: data.name,
           email: data.email,
+          points: data.points,
         },
       });
 
@@ -171,6 +177,45 @@ const UsersPage = () => {
       console.error(err);
       toast.error("An error occurred while updating the user");
     }
+  };
+
+  const handleAdjustPoints = async (userId: string, pointsChange: number) => {
+    try {
+      const user = users.find((u) => u.id === userId);
+      if (!user) return;
+
+      const newPoints = (user.points || 0) + pointsChange;
+      if (newPoints < 0) {
+        toast.error("Points cannot be negative");
+        return;
+      }
+
+      const { data: updatedUser, error } = await authClient.admin.updateUser({
+        userId: userId,
+        data: {
+          points: newPoints,
+        },
+      });
+
+      if (error) {
+        toast.error(error.message || "Failed to adjust points");
+        return;
+      }
+
+      if (updatedUser) {
+        toast.success(`Points adjusted successfully! New points: ${newPoints}`);
+        // Refresh the users list
+        fetchUsers(currentPage, searchValue, searchField);
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("An error occurred while adjusting points");
+    }
+  };
+
+  const handleAdjustPointsClick = (user: User) => {
+    setUserToAdjustPoints(user);
+    setIsAdjustPointsModalOpen(true);
   };
 
   const handleEditUser = (user: User) => {
@@ -249,6 +294,7 @@ const UsersPage = () => {
             loading={loading}
             onEditUser={handleEditUser}
             onViewSessions={handleViewSessions}
+            onAdjustPoints={handleAdjustPointsClick}
             onDeleteUser={handleDeleteUserClick}
           />
 
@@ -277,6 +323,14 @@ const UsersPage = () => {
         isDeleting={isDeleting}
         onConfirmDelete={handleDeleteUser}
         onCancel={() => setUserToDelete(null)}
+      />
+
+      {/* Adjust Points Dialog */}
+      <AdjustPointsDialog
+        isOpen={isAdjustPointsModalOpen}
+        onOpenChange={setIsAdjustPointsModalOpen}
+        user={userToAdjustPoints}
+        onAdjustPoints={handleAdjustPoints}
       />
     </div>
   );

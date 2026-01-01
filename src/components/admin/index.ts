@@ -3,6 +3,7 @@ export { UserTable } from "./UserTable";
 export { Pagination } from "./Pagination";
 export { CreateUserDialog } from "./CreateUserDialog";
 export { UpdateUserDialog } from "./UpdateUserDialog";
+export { AdjustPointsDialog } from "./AdjustPointsDialog";
 export { DeleteUserDialog } from "./DeleteUserDialog";
 export type {
   User,
