@@ -43,7 +43,7 @@ const Navbar = () => {
           href="/"
           className="text-xl font-bold hover:text-primary transition-colors"
         >
-          BetterAuth
+          AC Event
         </Link>
         <div className="hidden md:flex items-center space-x-4">
           <Link

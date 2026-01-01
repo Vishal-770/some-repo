@@ -42,6 +42,11 @@ const HomePage = () => {
                 Admin Panel
               </Button>
             </Link>
+            <Link href="/leaderboard">
+              <Button size="lg" variant="outline" className="w-full">
+                Leaderboard
+              </Button>
+            </Link>
             <Link href="/forgot-password">
               <Button size="lg" variant="secondary" className="w-full">
                 Reset Password
@@ -144,6 +149,20 @@ const HomePage = () => {
               <p className="text-sm text-muted-foreground">
                 Test and interact with different API endpoints for public and
                 private access.
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Leaderboard</CardTitle>
+              <CardDescription>
+                View the top users ranked by their points.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">
+                Check out the leaderboard to see how you rank among other users.
               </p>
             </CardContent>
           </Card>
