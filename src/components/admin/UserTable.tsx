@@ -17,14 +17,14 @@ interface UserTableProps {
   users: User[];
   loading: boolean;
   onViewSessions: (userId: string) => void;
-  onDeleteUser: (userId: string) => void;
+  onBanUser: (user: User) => void;
 }
 
 export function UserTable({
   users,
   loading,
   onViewSessions,
-  onDeleteUser,
+  onBanUser,
 }: UserTableProps) {
   if (loading) {
     return (
@@ -78,9 +78,9 @@ export function UserTable({
                   <Button
                     variant="destructive"
                     size="sm"
-                    onClick={() => onDeleteUser(user.id)}
+                    onClick={() => onBanUser(user)}
                   >
-                    Delete
+                    Ban
                   </Button>
                 </div>
               </TableCell>

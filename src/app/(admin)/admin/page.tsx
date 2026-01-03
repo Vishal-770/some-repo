@@ -16,7 +16,7 @@ import {
   SearchAndFilter,
   UserTable,
   Pagination,
-  DeleteUserDialog,
+  BanUserDialog,
   User,
 } from "@/src/components/admin";
 
@@ -28,8 +28,8 @@ const UsersPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [searchValue, setSearchValue] = useState<string>("");
   const [searchField, setSearchField] = useState<"email" | "name">("email");
-  const [userToDelete, setUserToDelete] = useState<User | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [userToBan, setUserToBan] = useState<User | null>(null);
+  const [isBanning, setIsBanning] = useState(false);
 
   const pageSize = 10;
 
@@ -84,29 +84,35 @@ const UsersPage = () => {
     setCurrentPage(page);
   };
 
-  const handleDeleteUser = async (userId: string) => {
-    setIsDeleting(true);
+  const handleBanUser = async (
+    userId: string,
+    banReason: string,
+    banExpiresIn: number
+  ) => {
+    setIsBanning(true);
     try {
-      const { data: deletedUser, error } = await authClient.admin.removeUser({
+      const { data: bannedUser, error } = await authClient.admin.banUser({
         userId: userId,
+        banReason: banReason,
+        banExpiresIn: banExpiresIn,
       });
 
       if (error) {
-        toast.error(error.message || "Failed to delete user");
+        toast.error(error.message || "Failed to ban user");
         return;
       }
 
-      if (deletedUser) {
-        toast.success("User deleted successfully!");
-        setUserToDelete(null);
+      if (bannedUser) {
+        toast.success("User banned successfully!");
+        setUserToBan(null);
         // Refresh the users list
         fetchUsers(currentPage, searchValue, searchField);
       }
     } catch (err) {
       console.error(err);
-      toast.error("An error occurred while deleting the user");
+      toast.error("An error occurred while banning the user");
     } finally {
-      setIsDeleting(false);
+      setIsBanning(false);
     }
   };
 
@@ -114,11 +120,8 @@ const UsersPage = () => {
     window.location.href = `/admin/${userId}`;
   };
 
-  const handleDeleteUserClick = (userId: string) => {
-    const user = users.find((u) => u.id === userId);
-    if (user) {
-      setUserToDelete(user);
-    }
+  const handleBanUserClick = (user: User) => {
+    setUserToBan(user);
   };
 
   const handleSignOut = async () => {
@@ -175,7 +178,7 @@ const UsersPage = () => {
             users={users}
             loading={loading}
             onViewSessions={handleViewSessions}
-            onDeleteUser={handleDeleteUserClick}
+            onBanUser={handleBanUserClick}
           />
 
           {/* Pagination */}
@@ -189,12 +192,12 @@ const UsersPage = () => {
         </CardContent>
       </Card>
 
-      {/* Delete User Dialog */}
-      <DeleteUserDialog
-        user={userToDelete}
-        isDeleting={isDeleting}
-        onConfirmDelete={handleDeleteUser}
-        onCancel={() => setUserToDelete(null)}
+      {/* Ban User Dialog */}
+      <BanUserDialog
+        user={userToBan}
+        isBanning={isBanning}
+        onConfirmBan={handleBanUser}
+        onCancel={() => setUserToBan(null)}
       />
     </div>
   );
