@@ -20,6 +20,7 @@ import {
   UnbanConfirmationDialog,
   User,
 } from "@/src/components/admin";
+import Link from "next/link";
 
 const UsersPage = () => {
   const [users, setUsers] = useState<User[]>([]);
@@ -45,27 +46,28 @@ const UsersPage = () => {
     setError(null);
 
     try {
-      const { data, error } = await authClient.admin.listUsers({
-        query: {
-          limit: pageSize,
-          offset: (page - 1) * pageSize,
-          searchValue: search || undefined,
-          searchField: field || "email",
-          searchOperator: "contains",
-          sortBy: "createdAt",
-          sortDirection: "desc",
-        },
+      const params = new URLSearchParams({
+        limit: pageSize.toString(),
+        offset: ((page - 1) * pageSize).toString(),
+        sortBy: "createdAt",
+        sortDirection: "desc",
       });
 
-      if (error) {
-        setError(error.message || "Failed to fetch users");
+      if (search) {
+        params.append("searchValue", search);
+        params.append("searchField", field || "email");
+      }
+
+      const response = await fetch(`/api/admin/users?${params.toString()}`);
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.error || "Failed to fetch users");
         return;
       }
 
-      if (data) {
-        setUsers(data.users);
-        setTotal(data.total);
-      }
+      setUsers(data.users);
+      setTotal(data.total);
     } catch (err) {
       console.error(err);
       setError("An error occurred while fetching users");
@@ -173,6 +175,15 @@ const UsersPage = () => {
 
   return (
     <div className="container mx-auto p-6 space-y-6">
+      <div className="flex gap-2 mb-4">
+        <Button variant="default" asChild>
+          <Link href="/admin">Users</Link>
+        </Button>
+        <Button variant="outline" asChild>
+          <Link href="/admin/teams">Teams</Link>
+        </Button>
+      </div>
+
       <Card>
         <CardHeader>
           <div className="flex justify-between items-start">

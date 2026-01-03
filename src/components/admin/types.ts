@@ -10,6 +10,8 @@ export interface User {
   banReason?: string | null;
   banExpires?: Date | string | null;
   bannedAt?: Date | string | null;
+  teamId?: string | null;
+  teamName?: string | null;
   // Custom fields
 }
 

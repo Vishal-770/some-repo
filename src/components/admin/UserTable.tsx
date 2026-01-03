@@ -47,6 +47,7 @@ export function UserTable({
             <TableHead>Name</TableHead>
             <TableHead>Email</TableHead>
             <TableHead>Role</TableHead>
+            <TableHead>Team</TableHead>
             <TableHead>Created At</TableHead>
             <TableHead>Points</TableHead>
             <TableHead>Ban Status</TableHead>
@@ -64,6 +65,13 @@ export function UserTable({
                 >
                   {user.role ?? "user"}
                 </Badge>
+              </TableCell>
+              <TableCell>
+                {user.teamName ? (
+                  <Badge variant="outline">{user.teamName}</Badge>
+                ) : (
+                  <span className="text-muted-foreground">No team</span>
+                )}
               </TableCell>
               <TableCell>
                 {new Date(user.createdAt).toLocaleDateString()}

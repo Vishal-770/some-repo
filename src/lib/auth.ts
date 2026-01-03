@@ -36,6 +36,15 @@ export const auth = betterAuth({
     },
   },
 
+  user: {
+    additionalFields: {
+      teamId: {
+        type: "string",
+        required: false,
+        defaultValue: null,
+      },
+    },
+  },
   // ================================
   // PLUGINS
   // ================================
