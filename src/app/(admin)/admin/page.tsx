@@ -17,6 +17,7 @@ import {
   UserTable,
   Pagination,
   BanUserDialog,
+  UnbanConfirmationDialog,
   User,
 } from "@/src/components/admin";
 
@@ -30,6 +31,8 @@ const UsersPage = () => {
   const [searchField, setSearchField] = useState<"email" | "name">("email");
   const [userToBan, setUserToBan] = useState<User | null>(null);
   const [isBanning, setIsBanning] = useState(false);
+  const [userToUnban, setUserToUnban] = useState<User | null>(null);
+  const [isUnbanning, setIsUnbanning] = useState(false);
 
   const pageSize = 10;
 
@@ -116,10 +119,11 @@ const UsersPage = () => {
     }
   };
 
-  const handleUnbanUser = async (userId: string) => {
+  const handleUnbanUser = async (user: User) => {
+    setIsUnbanning(true);
     try {
       const { data: unbannedUser, error } = await authClient.admin.unbanUser({
-        userId: userId,
+        userId: user.id,
       });
 
       if (error) {
@@ -129,12 +133,15 @@ const UsersPage = () => {
 
       if (unbannedUser) {
         toast.success("User unbanned successfully!");
+        setUserToUnban(null);
         // Refresh the users list
         fetchUsers(currentPage, searchValue, searchField);
       }
     } catch (err) {
       console.error(err);
       toast.error("An error occurred while unbanning the user");
+    } finally {
+      setIsUnbanning(false);
     }
   };
 
@@ -144,6 +151,10 @@ const UsersPage = () => {
 
   const handleBanUserClick = (user: User) => {
     setUserToBan(user);
+  };
+
+  const handleUnbanUserClick = (user: User) => {
+    setUserToUnban(user);
   };
 
   const handleSignOut = async () => {
@@ -201,7 +212,7 @@ const UsersPage = () => {
             loading={loading}
             onViewSessions={handleViewSessions}
             onBanUser={handleBanUserClick}
-            onUnbanUser={handleUnbanUser}
+            onUnbanUser={handleUnbanUserClick}
           />
 
           {/* Pagination */}
@@ -221,6 +232,14 @@ const UsersPage = () => {
         isBanning={isBanning}
         onConfirmBan={handleBanUser}
         onCancel={() => setUserToBan(null)}
+      />
+
+      {/* Unban Confirmation Dialog */}
+      <UnbanConfirmationDialog
+        user={userToUnban}
+        isUnbanning={isUnbanning}
+        onConfirmUnban={handleUnbanUser}
+        onCancel={() => setUserToUnban(null)}
       />
     </div>
   );

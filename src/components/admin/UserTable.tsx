@@ -18,7 +18,7 @@ interface UserTableProps {
   loading: boolean;
   onViewSessions: (userId: string) => void;
   onBanUser: (user: User) => void;
-  onUnbanUser: (userId: string) => void;
+  onUnbanUser: (user: User) => void;
 }
 
 export function UserTable({
@@ -102,7 +102,7 @@ export function UserTable({
                     <Button
                       variant="default"
                       size="sm"
-                      onClick={() => onUnbanUser(user.id)}
+                      onClick={() => onUnbanUser(user)}
                     >
                       Unban
                     </Button>
