@@ -6,6 +6,11 @@ export interface User {
   role?: string;
   username?: string;
   points?: number;
+  banned?: boolean | null;
+  banReason?: string | null;
+  banExpires?: Date | string | null;
+  bannedAt?: Date | string | null;
+  // Custom fields
 }
 
 export interface SearchFilters {

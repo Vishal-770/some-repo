@@ -18,6 +18,7 @@ interface UserTableProps {
   loading: boolean;
   onViewSessions: (userId: string) => void;
   onBanUser: (user: User) => void;
+  onUnbanUser: (userId: string) => void;
 }
 
 export function UserTable({
@@ -25,6 +26,7 @@ export function UserTable({
   loading,
   onViewSessions,
   onBanUser,
+  onUnbanUser,
 }: UserTableProps) {
   if (loading) {
     return (
@@ -47,6 +49,7 @@ export function UserTable({
             <TableHead>Role</TableHead>
             <TableHead>Created At</TableHead>
             <TableHead>Points</TableHead>
+            <TableHead>Ban Status</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -67,6 +70,26 @@ export function UserTable({
               </TableCell>
               <TableCell>{user.points}</TableCell>
               <TableCell>
+                {user.banned ? (
+                  <div className="space-y-1">
+                    <Badge variant="destructive">Banned</Badge>
+                    {user.banExpires && (
+                      <div className="text-xs text-muted-foreground">
+                        Expires:{" "}
+                        {new Date(user.banExpires).toLocaleDateString()}
+                      </div>
+                    )}
+                    {user.banReason && (
+                      <div className="text-xs text-muted-foreground">
+                        Reason: {user.banReason}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <Badge variant="secondary">Active</Badge>
+                )}
+              </TableCell>
+              <TableCell>
                 <div className="flex gap-2">
                   <Button
                     variant="outline"
@@ -75,13 +98,23 @@ export function UserTable({
                   >
                     View Sessions
                   </Button>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => onBanUser(user)}
-                  >
-                    Ban
-                  </Button>
+                  {user.banned ? (
+                    <Button
+                      variant="default"
+                      size="sm"
+                      onClick={() => onUnbanUser(user.id)}
+                    >
+                      Unban
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => onBanUser(user)}
+                    >
+                      Ban
+                    </Button>
+                  )}
                 </div>
               </TableCell>
             </TableRow>

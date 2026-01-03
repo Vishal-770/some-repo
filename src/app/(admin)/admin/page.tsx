@@ -116,6 +116,28 @@ const UsersPage = () => {
     }
   };
 
+  const handleUnbanUser = async (userId: string) => {
+    try {
+      const { data: unbannedUser, error } = await authClient.admin.unbanUser({
+        userId: userId,
+      });
+
+      if (error) {
+        toast.error(error.message || "Failed to unban user");
+        return;
+      }
+
+      if (unbannedUser) {
+        toast.success("User unbanned successfully!");
+        // Refresh the users list
+        fetchUsers(currentPage, searchValue, searchField);
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("An error occurred while unbanning the user");
+    }
+  };
+
   const handleViewSessions = (userId: string) => {
     window.location.href = `/admin/${userId}`;
   };
@@ -179,6 +201,7 @@ const UsersPage = () => {
             loading={loading}
             onViewSessions={handleViewSessions}
             onBanUser={handleBanUserClick}
+            onUnbanUser={handleUnbanUser}
           />
 
           {/* Pagination */}
