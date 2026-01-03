@@ -52,7 +52,6 @@ export function SignupForm({
 
   const onSubmit = async (data: SignupFormData) => {
     setServerError(null);
-    console.log("Submitting signup form with data:", data);
     await authClient.signUp.email(
       {
         email: data.email,
