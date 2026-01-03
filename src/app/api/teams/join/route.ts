@@ -50,6 +50,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid join code" }, { status: 404 });
     }
 
+    // Check if team is verified
+    if (team.isVerified) {
+      return NextResponse.json(
+        {
+          error:
+            "Cannot join a verified team. Please contact an administrator.",
+        },
+        { status: 403 }
+      );
+    }
+
     // Add user to team
     await teamsCollection.updateOne(
       { _id: team._id },

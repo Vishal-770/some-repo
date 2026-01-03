@@ -28,6 +28,17 @@ export async function POST() {
       );
     }
 
+    // Check if team is verified
+    if (team.isVerified) {
+      return NextResponse.json(
+        {
+          error:
+            "Cannot leave a verified team. Please contact an administrator.",
+        },
+        { status: 403 }
+      );
+    }
+
     // Check if user is the team lead
     if (team.teamleadId.toString() === session.user.id) {
       return NextResponse.json(

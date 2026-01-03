@@ -42,7 +42,7 @@ export async function GET() {
     const usersCollection = db.collection("user");
     const teamsWithDetails = await Promise.all(
       teams.map(async (team) => {
-        const memberIds = team.members.map((id: ObjectId | string) => 
+        const memberIds = team.members.map((id: ObjectId | string) =>
           id instanceof ObjectId ? id : new ObjectId(id)
         );
         const teamLeadId = new ObjectId(team.teamleadId);

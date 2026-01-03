@@ -218,6 +218,11 @@ export default function TeamManagement() {
                 <div className="text-right">
                   <p className="text-sm font-medium">Join Code</p>
                   <p className="text-lg font-mono font-bold">{team.joinCode}</p>
+                  {team.isVerified && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Team locked - no new members
+                    </p>
+                  )}
                 </div>
               )}
             </div>
@@ -257,30 +262,38 @@ export default function TeamManagement() {
             <Separator />
 
             <div className="flex gap-2">
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="destructive" disabled={isLeaving}>
-                    {isLeaving ? "Leaving..." : "Leave Team"}
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Leave Team</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Are you sure you want to leave this team? This action
-                      cannot be undone.
-                      {team.isTeamLead &&
-                        " As the team lead, the team will be disbanded."}
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleLeaveTeam}>
-                      Leave Team
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
+              {team.isVerified && (
+                <p className="text-sm text-muted-foreground">
+                  This team is verified. Team changes are locked. Contact an
+                  administrator for modifications.
+                </p>
+              )}
+              {!team.isVerified && (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" disabled={isLeaving}>
+                      {isLeaving ? "Leaving..." : "Leave Team"}
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Leave Team</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Are you sure you want to leave this team? This action
+                        cannot be undone.
+                        {team.isTeamLead &&
+                          " As the team lead, the team will be disbanded."}
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleLeaveTeam}>
+                        Leave Team
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              )}
             </div>
           </div>
         ) : (
