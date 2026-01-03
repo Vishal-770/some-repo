@@ -16,13 +16,8 @@ import {
   SearchAndFilter,
   UserTable,
   Pagination,
-  CreateUserDialog,
-  UpdateUserDialog,
-  AdjustPointsDialog,
   DeleteUserDialog,
   User,
-  CreateUserForm,
-  UpdateUserForm,
 } from "@/src/components/admin";
 
 const UsersPage = () => {
@@ -33,15 +28,8 @@ const UsersPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [searchValue, setSearchValue] = useState<string>("");
   const [searchField, setSearchField] = useState<"email" | "name">("email");
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
-  const [userToUpdate, setUserToUpdate] = useState<User | null>(null);
-  const [isAdjustPointsModalOpen, setIsAdjustPointsModalOpen] = useState(false);
-  const [userToAdjustPoints, setUserToAdjustPoints] = useState<User | null>(
-    null
-  );
 
   const pageSize = 10;
 
@@ -85,7 +73,7 @@ const UsersPage = () => {
 
   useEffect(() => {
     fetchUsers(currentPage, searchValue, searchField);
-  }, [currentPage]);
+  }, [currentPage, searchValue, searchField]);
 
   const handleSearch = () => {
     setCurrentPage(1);
@@ -94,32 +82,6 @@ const UsersPage = () => {
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
-  };
-
-  const handleCreateUser = async (data: CreateUserForm) => {
-    try {
-      const { data: newUser, error } = await authClient.admin.createUser({
-        email: data.email,
-        password: data.password,
-        name: data.name,
-        role: data.role,
-      });
-
-      if (error) {
-        toast.error(error.message || "Failed to create user");
-        return;
-      }
-
-      if (newUser) {
-        toast.success("User created successfully!");
-        setIsCreateModalOpen(false);
-        // Refresh the users list
-        fetchUsers(currentPage, searchValue, searchField);
-      }
-    } catch (err) {
-      console.error(err);
-      toast.error("An error occurred while creating the user");
-    }
   };
 
   const handleDeleteUser = async (userId: string) => {
@@ -146,81 +108,6 @@ const UsersPage = () => {
     } finally {
       setIsDeleting(false);
     }
-  };
-
-  const handleUpdateUser = async (data: UpdateUserForm) => {
-    if (!userToUpdate) return;
-
-    try {
-      const { data: updatedUser, error } = await authClient.admin.updateUser({
-        userId: userToUpdate.id,
-        data: {
-          name: data.name,
-          email: data.email,
-          points: data.points,
-        },
-      });
-
-      if (error) {
-        toast.error(error.message || "Failed to update user");
-        return;
-      }
-
-      if (updatedUser) {
-        toast.success("User updated successfully!");
-        setIsUpdateModalOpen(false);
-        setUserToUpdate(null);
-        // Refresh the users list
-        fetchUsers(currentPage, searchValue, searchField);
-      }
-    } catch (err) {
-      console.error(err);
-      toast.error("An error occurred while updating the user");
-    }
-  };
-
-  const handleAdjustPoints = async (userId: string, pointsChange: number) => {
-    try {
-      const user = users.find((u) => u.id === userId);
-      if (!user) return;
-
-      const newPoints = (user.points || 0) + pointsChange;
-      if (newPoints < 0) {
-        toast.error("Points cannot be negative");
-        return;
-      }
-
-      const { data: updatedUser, error } = await authClient.admin.updateUser({
-        userId: userId,
-        data: {
-          points: newPoints,
-        },
-      });
-
-      if (error) {
-        toast.error(error.message || "Failed to adjust points");
-        return;
-      }
-
-      if (updatedUser) {
-        toast.success(`Points adjusted successfully! New points: ${newPoints}`);
-        // Refresh the users list
-        fetchUsers(currentPage, searchValue, searchField);
-      }
-    } catch (err) {
-      console.error(err);
-      toast.error("An error occurred while adjusting points");
-    }
-  };
-
-  const handleAdjustPointsClick = (user: User) => {
-    setUserToAdjustPoints(user);
-    setIsAdjustPointsModalOpen(true);
-  };
-
-  const handleEditUser = (user: User) => {
-    setUserToUpdate(user);
-    setIsUpdateModalOpen(true);
   };
 
   const handleViewSessions = (userId: string) => {
@@ -263,11 +150,6 @@ const UsersPage = () => {
               <Button variant="outline" onClick={handleSignOut}>
                 Sign Out
               </Button>
-              <CreateUserDialog
-                isOpen={isCreateModalOpen}
-                onOpenChange={setIsCreateModalOpen}
-                onCreateUser={handleCreateUser}
-              />
             </div>
           </div>
         </CardHeader>
@@ -292,9 +174,7 @@ const UsersPage = () => {
           <UserTable
             users={users}
             loading={loading}
-            onEditUser={handleEditUser}
             onViewSessions={handleViewSessions}
-            onAdjustPoints={handleAdjustPointsClick}
             onDeleteUser={handleDeleteUserClick}
           />
 
@@ -309,28 +189,12 @@ const UsersPage = () => {
         </CardContent>
       </Card>
 
-      {/* Update User Dialog */}
-      <UpdateUserDialog
-        isOpen={isUpdateModalOpen}
-        onOpenChange={setIsUpdateModalOpen}
-        user={userToUpdate}
-        onUpdateUser={handleUpdateUser}
-      />
-
       {/* Delete User Dialog */}
       <DeleteUserDialog
         user={userToDelete}
         isDeleting={isDeleting}
         onConfirmDelete={handleDeleteUser}
         onCancel={() => setUserToDelete(null)}
-      />
-
-      {/* Adjust Points Dialog */}
-      <AdjustPointsDialog
-        isOpen={isAdjustPointsModalOpen}
-        onOpenChange={setIsAdjustPointsModalOpen}
-        user={userToAdjustPoints}
-        onAdjustPoints={handleAdjustPoints}
       />
     </div>
   );
