@@ -12,6 +12,13 @@ import {
 import { Button } from "@/src/components/ui/button";
 import { Input } from "@/src/components/ui/input";
 import { Label } from "@/src/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/src/components/ui/select";
 import { User } from "./types";
 
 interface BanUserDialogProps {
@@ -32,12 +39,23 @@ export function BanUserDialog({
   onCancel,
 }: BanUserDialogProps) {
   const [banReason, setBanReason] = useState("");
-  const [banExpiresIn, setBanExpiresIn] = useState(60 * 60 * 24 * 1); // 1 day in seconds
+  const [banDuration, setBanDuration] = useState(1);
+  const [banUnit, setBanUnit] = useState<"minutes" | "hours" | "days" | "weeks">("days");
+
+  const getBanExpiresIn = () => {
+    const multipliers = {
+      minutes: 60,
+      hours: 60 * 60,
+      days: 60 * 60 * 24,
+      weeks: 60 * 60 * 24 * 7,
+    };
+    return banDuration * multipliers[banUnit];
+  };
 
   if (!user) return null;
 
   const handleConfirm = () => {
-    onConfirmBan(user.id, banReason, banExpiresIn);
+    onConfirmBan(user.id, banReason, getBanExpiresIn());
   };
 
   return (
@@ -52,7 +70,7 @@ export function BanUserDialog({
         </DialogHeader>
         <div className="space-y-4">
           <div>
-            <Label htmlFor="banReason">Ban Reason</Label>
+            <Label htmlFor="banReason" className="mb-2 block">Ban Reason</Label>
             <Input
               id="banReason"
               value={banReason}
@@ -61,17 +79,30 @@ export function BanUserDialog({
             />
           </div>
           <div>
-            <Label htmlFor="banExpiresIn">Ban Duration (seconds)</Label>
-            <Input
-              id="banExpiresIn"
-              type="number"
-              value={banExpiresIn}
-              onChange={(e) => setBanExpiresIn(Number(e.target.value))}
-              placeholder="Enter duration in seconds"
-            />
+            <Label className="mb-2 block">Ban Duration</Label>
+            <div className="flex gap-2">
+              <Input
+                type="number"
+                value={banDuration}
+                onChange={(e) => setBanDuration(Number(e.target.value))}
+                placeholder="Enter duration"
+                min="1"
+                className="flex-1"
+              />
+              <Select value={banUnit} onValueChange={(value: "minutes" | "hours" | "days" | "weeks") => setBanUnit(value)}>
+                <SelectTrigger className="w-32">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="minutes">Minutes</SelectItem>
+                  <SelectItem value="hours">Hours</SelectItem>
+                  <SelectItem value="days">Days</SelectItem>
+                  <SelectItem value="weeks">Weeks</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             <p className="text-sm text-muted-foreground mt-1">
-              Current: {banExpiresIn} seconds (
-              {Math.floor(banExpiresIn / (60 * 60 * 24))} days)
+              Total: {getBanExpiresIn()} seconds ({banDuration} {banUnit})
             </p>
           </div>
         </div>
