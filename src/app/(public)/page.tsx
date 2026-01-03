@@ -47,16 +47,6 @@ const HomePage = () => {
                 Leaderboard
               </Button>
             </Link>
-            <Link href="/forgot-password">
-              <Button size="lg" variant="secondary" className="w-full">
-                Reset Password
-              </Button>
-            </Link>
-            <Link href="/reset-password">
-              <Button size="lg" variant="secondary" className="w-full">
-                Password Reset
-              </Button>
-            </Link>
           </div>
         </div>
 
@@ -124,16 +114,16 @@ const HomePage = () => {
 
           <Card>
             <CardHeader>
-              <CardTitle>Password Recovery</CardTitle>
+              <CardTitle>Google Sign-In</CardTitle>
               <CardDescription>
-                Reset your password if you&apos;ve forgotten it or need to
-                change it.
+                Seamless single sign-on with your Google account—no passwords to
+                manage.
               </CardDescription>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground">
-                Secure password reset functionality to help you regain access to
-                your account.
+                Connect instantly using Google OAuth for faster, more secure
+                access to your workspace.
               </p>
             </CardContent>
           </Card>

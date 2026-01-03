@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
 
-export default function ResetPasswordPage() {
+export default function SignupPage() {
   redirect("/signin");
 }

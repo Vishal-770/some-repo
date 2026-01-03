@@ -1,7 +1,5 @@
 import { betterAuth } from "better-auth";
-
 import { mongodbAdapter } from "better-auth/adapters/mongodb";
-import { sendPasswordResetEmail } from "../services/SendPasswordResetEmail";
 import { admin, username } from "better-auth/plugins";
 import clientPromise from "./mongo";
 
@@ -9,48 +7,42 @@ const client = await clientPromise;
 const db = client.db();
 
 export const auth = betterAuth({
+  // ================================
+  // GOOGLE ONLY (NO EMAIL/PASSWORD)
+  // ================================
   emailAndPassword: {
-    enabled: true,
-    requireEmailVerification: false,
-    autoSignIn: false,
-    sendResetPassword: async ({ user, url }) => {
-      void sendPasswordResetEmail(user.email, user.name, url);
+    enabled: false,
+  },
+
+  socialProviders: {
+    google: {
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     },
   },
-  user: {
-    additionalFields: {
-      points: {
-        type: "number",
-        required: false,
-        defaultValue: 0,
-      },
-    },
-  },
+
+  // ================================
+  // DATABASE
+  // ================================
   database: mongodbAdapter(db),
 
+  // ================================
+  // ACCOUNT LINKING
+  // ================================
   account: {
     accountLinking: {
       enabled: true,
-      trustedProviders: ["email"],
+      trustedProviders: ["google"],
     },
   },
 
+  // ================================
+  // PLUGINS
+  // ================================
   plugins: [
     username(),
     admin({
-      adminUserIds: ["6954f2f145f3640d14e21623", "695505fa2e31a93d2c16f33c"],
+      adminUserIds: ["69595417cb4d43b7d9514a65", "695505fa2e31a93d2c16f33c"],
     }),
   ],
-
-  // Use databaseHooks to handle user creation
-  databaseHooks: {
-    user: {
-      create: {
-        before: async (user) => {
-          // Return the user data wrapped in { data: user }
-          return { data: user };
-        },
-      },
-    },
-  },
 });
