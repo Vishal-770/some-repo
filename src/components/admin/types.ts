@@ -8,19 +8,6 @@ export interface User {
   points?: number;
 }
 
-export interface CreateUserForm {
-  email: string;
-  password: string;
-  name: string;
-  role: "user";
-}
-
-export interface UpdateUserForm {
-  email: string;
-  name: string;
-  points: number;
-}
-
 export interface SearchFilters {
   searchValue: string;
   searchField: "email" | "name";
