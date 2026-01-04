@@ -61,7 +61,7 @@ export default async function ProfilePage() {
           </Card>
 
           <div className="mt-8">
-            <TeamManagement />
+            <TeamManagement user={user} />
           </div>
         </>
       )}

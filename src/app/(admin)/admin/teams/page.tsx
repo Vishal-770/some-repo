@@ -27,6 +27,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/src/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/src/components/ui/alert-dialog";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
@@ -53,6 +63,8 @@ export default function TeamsAdminPage() {
   const [loading, setLoading] = useState(true);
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
   const [isVerifying, setIsVerifying] = useState(false);
+  const [teamToVerify, setTeamToVerify] = useState<Team | null>(null);
+  const [teamToUnverify, setTeamToUnverify] = useState<Team | null>(null);
 
   const fetchTeams = async () => {
     try {
@@ -95,6 +107,8 @@ export default function TeamsAdminPage() {
         );
         fetchTeams();
         setSelectedTeam(null);
+        setTeamToVerify(null);
+        setTeamToUnverify(null);
       } else {
         toast.error(data.error || "Failed to update team verification");
       }
@@ -208,7 +222,7 @@ export default function TeamsAdminPage() {
                             <Button
                               variant="default"
                               size="sm"
-                              onClick={() => handleVerifyTeam(team.id, true)}
+                              onClick={() => setTeamToVerify(team)}
                               disabled={isVerifying}
                             >
                               Verify
@@ -217,7 +231,7 @@ export default function TeamsAdminPage() {
                             <Button
                               variant="secondary"
                               size="sm"
-                              onClick={() => handleVerifyTeam(team.id, false)}
+                              onClick={() => setTeamToUnverify(team)}
                               disabled={isVerifying}
                             >
                               Unverify
@@ -312,6 +326,64 @@ export default function TeamsAdminPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Verify Team Confirmation Dialog */}
+      <AlertDialog
+        open={!!teamToVerify}
+        onOpenChange={() => setTeamToVerify(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Verify Team</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to verify the team &quot;
+              {teamToVerify?.name}&quot;? This will allow the team to
+              participate in competitions and appear on the leaderboard. This
+              action can be reversed later.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() =>
+                teamToVerify && handleVerifyTeam(teamToVerify.id, true)
+              }
+              className="bg-green-600 hover:bg-green-700"
+            >
+              Verify Team
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Unverify Team Confirmation Dialog */}
+      <AlertDialog
+        open={!!teamToUnverify}
+        onOpenChange={() => setTeamToUnverify(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Unverify Team</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to unverify the team &quot;
+              {teamToUnverify?.name}&quot;? This will remove the team from
+              competitions and hide them from the leaderboard. The team will
+              need to be verified again to participate.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() =>
+                teamToUnverify && handleVerifyTeam(teamToUnverify.id, false)
+              }
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Unverify Team
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

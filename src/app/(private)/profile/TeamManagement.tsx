@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Button } from "@/src/components/ui/button";
 import { Input } from "@/src/components/ui/input";
 import { Label } from "@/src/components/ui/label";
@@ -34,30 +34,33 @@ import {
 import { Badge } from "@/src/components/ui/badge";
 import { Separator } from "@/src/components/ui/separator";
 import { toast } from "sonner";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { User } from "better-auth";
+import { fetchUserTeam } from "@/src/services/FetchUserTeam";
 
-interface TeamMember {
-  id: string;
-  name: string;
-  email: string;
-}
+// interface TeamMember {
+//   id: string;
+//   name: string;
+//   email: string;
+// }
 
-interface Team {
-  id: string;
-  name: string;
-  joinCode?: string;
-  members: TeamMember[];
-  teamleadId: string;
-  teamleadName: string;
-  points: number;
-  logoUrl?: string;
-  isVerified: boolean;
-  createdAt: string;
-  isTeamLead: boolean;
-}
+// interface Team {
+//   id: string;
+//   name: string;
+//   joinCode?: string;
+//   members: TeamMember[];
+//   teamleadId: string;
+//   teamleadName: string;
+//   points: number;
+//   logoUrl?: string;
+//   isVerified: boolean;
+//   createdAt: string;
+//   isTeamLead: boolean;
+// }
 
-export default function TeamManagement() {
-  const [team, setTeam] = useState<Team | null>(null);
-  const [loading, setLoading] = useState(true);
+export default function TeamManagement({ user }: { user: User }) {
+  // const [team, setTeam] = useState<Team | null>(null);
+  // const [loading, setLoading] = useState(true);
   const [createTeamName, setCreateTeamName] = useState("");
   const [joinCode, setJoinCode] = useState("");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -65,27 +68,11 @@ export default function TeamManagement() {
   const [isCreating, setIsCreating] = useState(false);
   const [isJoining, setIsJoining] = useState(false);
   const [isLeaving, setIsLeaving] = useState(false);
-
-  const fetchTeam = async () => {
-    try {
-      const response = await fetch("/api/teams/my-team");
-      const data = await response.json();
-
-      if (response.ok) {
-        setTeam(data.team);
-      } else {
-        console.error("Error fetching team:", data.error);
-      }
-    } catch (error) {
-      console.error("Error fetching team:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchTeam();
-  }, []);
+  const { data: team, isLoading } = useQuery({
+    queryKey: ["userTeam", user.email],
+    queryFn: fetchUserTeam,
+  });
+  const queryClient = useQueryClient();
 
   const handleCreateTeam = async () => {
     if (!createTeamName.trim()) return;
@@ -104,10 +91,11 @@ export default function TeamManagement() {
 
       if (response.ok) {
         toast.success("Team created successfully!");
-        setTeam(data.team);
+        // setTeam(data.team);
         setIsCreateDialogOpen(false);
         setCreateTeamName("");
-        fetchTeam(); // Refresh team data
+        // fetchTeam(); // Refresh team data - React Query will handle this
+        queryClient.invalidateQueries({ queryKey: ["userTeam", user.email] });
       } else {
         toast.error(data.error || "Failed to create team");
       }
@@ -138,7 +126,8 @@ export default function TeamManagement() {
         toast.success("Successfully joined team!");
         setIsJoinDialogOpen(false);
         setJoinCode("");
-        fetchTeam(); // Refresh team data
+        // fetchTeam(); // Refresh team data - React Query will handle this
+        queryClient.invalidateQueries({ queryKey: ["userTeam", user.email] });
       } else {
         toast.error(data.error || "Failed to join team");
       }
@@ -161,8 +150,9 @@ export default function TeamManagement() {
 
       if (response.ok) {
         toast.success("Successfully left team!");
-        setTeam(null);
-        fetchTeam(); // Refresh team data
+        // setTeam(null);
+        // fetchTeam(); // Refresh team data - React Query will handle this
+        queryClient.invalidateQueries({ queryKey: ["userTeam", user.email] });
       } else {
         toast.error(data.error || "Failed to leave team");
       }
@@ -174,7 +164,32 @@ export default function TeamManagement() {
     }
   };
 
-  if (loading) {
+  const handleDeleteTeam = async () => {
+    setIsLeaving(true);
+    try {
+      const response = await fetch("/api/teams/delete", {
+        method: "POST",
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success("Team deleted successfully!");
+        // setTeam(null);
+        // fetchTeam(); // Refresh team data - React Query will handle this
+        queryClient.invalidateQueries({ queryKey: ["userTeam", user.email] });
+      } else {
+        toast.error(data.error || "Failed to delete team");
+      }
+    } catch (error) {
+      console.error("Error deleting team:", error);
+      toast.error("Failed to delete team");
+    } finally {
+      setIsLeaving(false);
+    }
+  };
+
+  if (isLoading) {
     return (
       <Card>
         <CardHeader>
@@ -269,30 +284,57 @@ export default function TeamManagement() {
                 </p>
               )}
               {!team.isVerified && (
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button variant="destructive" disabled={isLeaving}>
-                      {isLeaving ? "Leaving..." : "Leave Team"}
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Leave Team</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        Are you sure you want to leave this team? This action
-                        cannot be undone.
-                        {team.isTeamLead &&
-                          " As the team lead, the team will be disbanded."}
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={handleLeaveTeam}>
-                        Leave Team
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
+                <>
+                  {team.isTeamLead ? (
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="destructive" disabled={isLeaving}>
+                          {isLeaving ? "Deleting..." : "Delete Team"}
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete Team</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to delete this team? This will
+                            remove all team members and cannot be undone. As the
+                            team leader, deleting the team will disband it
+                            completely.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={handleDeleteTeam}>
+                            Delete Team
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  ) : (
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="destructive" disabled={isLeaving}>
+                          {isLeaving ? "Leaving..." : "Leave Team"}
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Leave Team</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to leave this team? This
+                            action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={handleLeaveTeam}>
+                            Leave Team
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  )}
+                </>
               )}
             </div>
           </div>
