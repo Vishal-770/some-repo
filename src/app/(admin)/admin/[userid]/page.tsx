@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useParams } from "next/navigation";
 import { authClient } from "@/src/lib/auth-client";
 import { Button } from "@/src/components/ui/button";
@@ -52,7 +52,7 @@ const UserSessionsPage = () => {
   const [confirmRevokeAll, setConfirmRevokeAll] = useState<boolean>(false);
   const [sessionToRevoke, setSessionToRevoke] = useState<string | null>(null);
 
-  const fetchUserSessions = async () => {
+  const fetchUserSessions = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -75,13 +75,13 @@ const UserSessionsPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId]);
 
   useEffect(() => {
     if (userId) {
       fetchUserSessions();
     }
-  }, [userId]);
+  }, [userId, fetchUserSessions]);
 
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleString();
@@ -109,17 +109,13 @@ const UserSessionsPage = () => {
     return "Unknown browser";
   };
 
-  const handleRevokeAllSessions = () => {
-    setConfirmRevokeAll(true);
-  };
-
   const confirmRevokeAllSessions = async () => {
     try {
       setRevokingAll(true);
       setConfirmRevokeAll(false);
       setError(null);
 
-      const { data, error } = await authClient.admin.revokeUserSessions({
+      const { error } = await authClient.admin.revokeUserSessions({
         userId: userId,
       });
 
@@ -141,21 +137,29 @@ const UserSessionsPage = () => {
     }
   };
 
-  const handleRevokeSession = (sessionToken: string) => {
-    setSessionToRevoke(sessionToken);
+  const handleRevokeSession = (sessionId: string) => {
+    setSessionToRevoke(sessionId);
   };
 
   const confirmRevokeSession = async () => {
     if (!sessionToRevoke) return;
 
     try {
-      const sessionToken = sessionToRevoke;
-      setRevokingSession(sessionToken);
+      const sessionId = sessionToRevoke;
+      setRevokingSession(sessionId);
       setSessionToRevoke(null);
       setError(null);
 
-      const { data, error } = await authClient.admin.revokeUserSession({
-        sessionToken: sessionToken,
+      // Find the session to get the token
+      const session = sessions.find((s) => s.id === sessionId);
+      if (!session) {
+        setError("Session not found");
+        toast.error("Session not found");
+        return;
+      }
+
+      const { error } = await authClient.admin.revokeUserSession({
+        sessionToken: session.token,
       });
 
       if (error) {
@@ -229,6 +233,7 @@ const UserSessionsPage = () => {
             <Button
               variant="destructive"
               disabled={revokingAll || sessions.length === 0}
+              onClick={() => setConfirmRevokeAll(true)}
             >
               {revokingAll ? "Revoking..." : "Revoke All Sessions"}
             </Button>
@@ -297,7 +302,7 @@ const UserSessionsPage = () => {
                       </Badge>
                       {!isExpired(session.expiresAt) && (
                         <AlertDialog
-                          open={sessionToRevoke === session.token}
+                          open={sessionToRevoke === session.id}
                           onOpenChange={(open) =>
                             !open && setSessionToRevoke(null)
                           }
@@ -306,9 +311,10 @@ const UserSessionsPage = () => {
                             <Button
                               variant="destructive"
                               size="sm"
-                              disabled={revokingSession === session.token}
+                              disabled={revokingSession === session.id}
+                              onClick={() => handleRevokeSession(session.id)}
                             >
-                              {revokingSession === session.token
+                              {revokingSession === session.id
                                 ? "Revoking..."
                                 : "Revoke"}
                             </Button>
